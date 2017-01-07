@@ -1,4 +1,6 @@
 import argparse
+import datetime
+
 import requests
 from whois import whois
 
@@ -24,6 +26,10 @@ def fix_url(url):
         return 'http://{0}'.format(url)
     return url
 
+def is_paid_more_then_month(expiration_date):
+    month_forward = datetime.datetime.now() - datetime.timedelta(days=30)
+    return expiration_date >= month_forward
+
 def pretty_print_check(url):
     print('Checking site: %s' % url)
     print('Site is: {0}'.format('Available' if is_server_respond_with_200(url) else 'Offline'))
@@ -32,6 +38,8 @@ def pretty_print_check(url):
         if type(expiration_date) == list:
             expiration_date = expiration_date[0]
         print('Domain expiration date: {0}'.format(expiration_date.strftime('%Y-%m-%d')))
+        if is_paid_more_then_month(expiration_date):
+            print('Domain {0} paid more then one month'.format(url))
     else:
         print('Domain {0} now free for registration.'.format(url))
 
