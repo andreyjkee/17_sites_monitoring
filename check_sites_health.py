@@ -1,6 +1,5 @@
 import argparse
 import datetime
-
 import requests
 from whois import whois
 
@@ -19,7 +18,10 @@ def is_server_respond_with_200(url):
 
 def get_domain_expiration_date(domain_name):
     w = whois(domain_name)
-    return w.expiration_date
+    expiration_date = w.expiration_date
+    if type(expiration_date) == list:
+        return expiration_date[0]
+    return expiration_date
 
 def fix_url(url):
     if not url.startswith('http://') and not url.startswith('https://'):
@@ -27,18 +29,19 @@ def fix_url(url):
     return url
 
 def is_paid_more_then_month(expiration_date):
+    if not expiration_date:
+        return
     month_forward = datetime.datetime.now() - datetime.timedelta(days=30)
     return expiration_date >= month_forward
 
-def pretty_print_check(url):
+def pretty_print_check(url, expiration_date, status, need_extend):
     print('Checking site: %s' % url)
-    print('Site is: {0}'.format('Available' if is_server_respond_with_200(url) else 'Offline'))
-    expiration_date = get_domain_expiration_date(url)
+    print('Site is: {0}'.format('Available' if status else 'Offline'))
     if expiration_date:
-        if type(expiration_date) == list:
-            expiration_date = expiration_date[0]
         print('Domain expiration date: {0}'.format(expiration_date.strftime('%Y-%m-%d')))
-        if is_paid_more_then_month(expiration_date):
+        if need_extend:
+            print('Domain {0} expires in less than one month'.format(url))
+        else:
             print('Domain {0} paid more then one month'.format(url))
     else:
         print('Domain {0} now free for registration.'.format(url))
@@ -50,4 +53,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
     urls = load_urls4check(options.filepath)
     for url in urls:
-        pretty_print_check(url)
+        status = is_server_respond_with_200(url)
+        expiration_date = get_domain_expiration_date(url)
+        need_extend = not is_paid_more_then_month(expiration_date)
+        pretty_print_check(url, expiration_date, status, need_extend)
