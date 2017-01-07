@@ -1,7 +1,13 @@
 # Sites Monitoring Utility
 
-[TODO. There will be project description]
+Script checks and display site status and domain expiration date for URLs in input file.
 
-# Project Goals
+Usage
+```
+python check_sites_health.py -p urls.txt
+```
 
-The code is written for educational purposes. Training course for web-developers - [DEVMAN.org](https://devman.org)
+For installation use command:
+```
+pip install -r requirements.txt
+```
